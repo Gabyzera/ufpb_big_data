@@ -1,0 +1,254 @@
+-- 1. a)
+-- INSERT INTO EMPREGADO VALUES ('943775543', 'Roberto', 'F', 'Silva', 'M', 'Rua X, 22 – Araucária – PR', '1952-06-21', '888665555', '1', '58000');
+-- b)
+-- INSERT INTO PROJETO VALUES ('4', 'ProdutoA', 'Araucaria', '2');
+-- Ocorreu erro devido ao número de departamento (2) não estar contido na tabela "departamento", o número de departamento aceitável é 5, 4 e 1
+-- c)
+-- INSERT INTO DEPARTAMENTO VALUES ('4', 'Produção', '943775543', '1998-10-01');
+-- Ocorreu erro devido a presença de um número de departamento (4) já existente na tabela "departamento"
+-- d)
+-- INSERT INTO TRABALHA VALUES ('677678989', '', '40.0');
+-- Ocorreu erro devido a presença de um dado no campo essn que não está contido no campo ssn da tabela "empregado"
+-- e)
+-- INSERT INTO DEPENDENTE VALUES ('453453453', 'Joao', 'M', '1970-12-12', 'CONJUGE');
+-- f)
+-- DELETE FROM TRABALHA WHERE essn = '333445555';
+-- g)
+-- DELETE FROM EMPREGADO WHERE ssn = '987654321';
+-- Ocorreu erro devido a não ser possível deletar um ssn da tabela "empregado" por conter um superssn na mesma tabela, cada superssn corresponde a um ssn existente
+-- h)
+-- DELETE FROM PROJETO WHERE pjnome = 'ProdutoX';
+-- Ocorreu erro devido a não ser possível deletar um pnumero que contenha o campo pno na tabela "trabalha" como correspondente
+-- i)
+-- UPDATE DEPARTAMENTO SET gerssn = '123456789', gerdatainicio = '1999-01-10' WHERE dnumero = '5';
+-- j)
+-- UPDATE EMPREGADO SET superssn = '943775543' WHERE ssn = '999887777';
+-- l)
+-- UPDATE TRABALHA SET horas = '5.0' WHERE essn = '999887777' AND pno = '10';
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 2. a)
+-- SELECT 
+--   e.ssn          AS num_seg_social
+--   ,de.nomedep    AS nome_dependente
+--   ,de.parentesco
+-- FROM
+--   EMPREGADO      AS e
+-- LEFT JOIN
+--   DEPENDENTE     AS de
+-- ON
+--   e.superssn = de.essn
+-- ORDER BY 
+--   e.ssn          ASC
+--   ,de.parentesco DESC
+-- b)
+-- SELECT 
+--   e.pnome      AS nome
+--   ,e.endereco
+-- FROM 
+--   EMPREGADO    AS e
+-- INNER JOIN
+--   DEPARTAMENTO AS dt
+-- ON
+--   e.dno = dt.dnumero
+-- WHERE
+--   dt.dnome = 'Pesquisa'
+-- c)
+-- SELECT
+--   p.pjnome     AS nome_projeto
+--   ,dt.dnome    AS nome_departamento
+--   -- Informações sobre o gerente do departamento
+--   ,e.unome     AS ultimo_nome
+--   ,e.endereco
+--   ,e.datanasc  AS data_nascimento
+-- FROM
+--   PROJETO      AS p
+-- INNER JOIN
+--   DEPARTAMENTO AS dt
+-- ON
+--   p.dnum = dt.dnumero
+-- INNER JOIN
+--   EMPREGADO    AS e
+-- ON
+--   dt.gerssn = e.ssn
+-- INNER JOIN
+--   LOCALIZACAO  AS l
+-- ON
+--   dt.dnumero = l.dnum
+-- WHERE
+--   l.dlocalizacao = 'Araucaria'
+-- d)
+-- SELECT
+--   e.pnome   AS nome
+-- FROM
+--   EMPREGADO AS e
+-- INNER JOIN 
+--   TRABALHA  AS t
+-- ON
+--   t.essn = e.ssn
+-- INNER JOIN
+--   PROJETO   AS p
+-- ON 
+--   t.pno = p.pnumero
+-- WHERE
+--   t.horas > '10'
+--   AND p.pjnome = 'Automatizacao'
+-- e)
+-- SELECT 
+--   e.pnome   AS nome
+-- FROM 
+--   EMPREGADO AS e
+-- ORDER BY 
+--   salario   DESC 
+-- LIMIT 3
+-- O Roberto adicionado na questão 1.a) é o que possui o salário mais alto
+-- f)
+-- SELECT
+--   e.pnome                      AS nome
+--   ,e.salario + (e.salario*0.2) AS salario_increase_20_percents
+-- FROM
+--   EMPREGADO AS e
+-- g)
+-- SELECT
+--   dt.dnome        AS nome
+--   ,l.dlocalizacao AS localizacao
+-- FROM
+--   DEPARTAMENTO    AS dt
+-- INNER JOIN 
+--   LOCALIZACAO     AS l
+-- ON
+--   l.dnum = dt.dnumero
+-- h)
+-- SELECT
+--   dt.dnome     AS nome
+--   ,p.pjnome    AS projetos
+-- FROM
+--   DEPARTAMENTO AS dt
+-- INNER JOIN 
+--   PROJETO      AS p
+-- ON
+--   p.dnum = dt.dnumero
+-- i)
+-- SELECT
+--   pnome     AS nome
+--   ,datanasc AS data_nascimento
+-- FROM
+--   EMPREGADO
+-- WHERE 
+--   sexo = 'F'
+--   AND salario > '30000'
+-- j)
+-- SELECT
+--   p.pjnome  AS projetos
+-- FROM
+--   PROJETO   AS p
+-- INNER JOIN
+--   DEPARTAMENTO AS dt
+-- ON 
+--   p.dnum = dt.dnumero
+-- INNER JOIN 
+--   EMPREGADO AS e
+-- ON 
+--   dt.gerssn = e.ssn
+-- WHERE 
+--   e.pnome = 'Fabio'
+-- Não retornou nenhuma linha pois modificamos o dado do campo d.gerssn quando o dnumero = '5' na questão 1.i)
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 3. a)
+-- SELECT
+--   e.ssn     AS num_seg_social
+--   ,concat(e.pnome, ' ', e.unome) AS nome_completo
+-- FROM
+--   EMPREGADO AS e
+-- JOIN
+--   EMPREGADO AS sup 
+-- ON 
+--   e.superssn = sup.ssn
+-- WHERE
+--   e.dno != sup.dno -- Comparando o número de departamento do empregado com o do supervisor
+-- Retorno de Alice Zebra pois o seu superior foi alterado na questão 1.j)
+-- b)
+-- SELECT 
+--   e.ssn          AS num_seg_social
+--   ,de.nomedep    AS nome_dependente
+--   ,de.parentesco
+-- FROM
+--   EMPREGADO      AS e
+-- LEFT JOIN
+--   DEPENDENTE     AS de
+-- ON
+--   e.superssn = de.essn
+-- ORDER BY 
+--   e.ssn          ASC
+--   ,de.parentesco DESC
+-- c)
+-- SELECT 
+--   e.pnome   AS nome
+-- FROM
+--   EMPREGADO AS e
+-- INNER JOIN
+--   EMPREGADO AS s
+-- ON 
+--   e.superssn = s.ssn
+-- WHERE
+--   concat(s.pnome, ' ', s.inicialm, ' ', s.unome) = 'Joaquim E Brito'
+-- d)
+-- SELECT 
+--   p.pnumero    AS numeros
+--   ,p.pjnome    AS nomes
+-- FROM
+--   PROJETO      AS p
+-- JOIN
+--   TRABALHA AS t
+-- ON 
+--   p.pnumero = t.pno
+-- JOIN
+--   DEPARTAMENTO AS dt
+-- ON
+--   p.dnum = dt.dnumero
+-- JOIN
+--   EMPREGADO    AS e
+-- ON(
+--   e.ssn = t.essn
+--   OR e.ssn = dt.gerssn
+-- )
+-- WHERE
+--   e.unome = 'Will'
+-- Não aparece os projetos que o Will trabalha pois os dados deles foram deletados da tabela "trabalha" e não retorna o projeto que inicialmente ele é gerente
+-- pois há a mudança do campo gerssn na questão 1.i)
+-- e)
+-- SELECT 
+--   DISTINCT e.pnome AS nome
+-- FROM
+--   EMPREGADO AS e
+-- JOIN 
+--   TRABALHA  AS t 
+-- ON 
+--   t.essn = e.ssn
+-- JOIN
+--   PROJETO   AS p
+-- ON
+--   t.pno = p.pnumero
+-- WHERE
+--   p.dnum = '5'
+-- A consulta não retorna o nome de Fabio pois seus dados correspondentes foram deletados da tabela de "trabalha" na questão 1.f)
+-- f)
+-- SELECT 
+--   DISTINCT e.pnome AS nome
+--   ,e.endereco
+-- FROM
+--   EMPREGADO        AS e
+-- JOIN
+--   TRABALHA         AS t
+-- ON 
+--   t.essn = e.ssn
+-- JOIN 
+--   PROJETO          AS p
+-- ON
+--   t.pno = p.pnumero
+-- JOIN  
+--   LOCALIZACAO      AS loc_dep
+-- ON 
+--   e.dno = loc_dep.dnum
+-- WHERE
+--   p.plocal = 'Curitiba'
+--   AND loc_dep.dlocalizacao != 'Curitiba'
