@@ -1,0 +1,62 @@
+-- 2.
+-- a) Recupere a média salarial de todos os empregados do sexo feminino.
+-- SELECT 
+--   avg(salario) AS media_salario
+-- FROM 
+--   EMPREGADO
+-- WHERE 
+--   sexo = 'F'
+-- b) Mostre o número de empregados por supervisor.
+-- SELECT 
+--   s.superssn    AS ssn_supervisor
+--   ,count(e.ssn) AS count_empregado_por_supervisor
+-- FROM 
+--   EMPREGADO     AS s
+-- JOIN 
+--   EMPREGADO     AS e
+-- ON 
+--   s.superssn = e.ssn
+-- GROUP BY
+--   s.superssn
+-- c) Mostre o maior número de horas envolvido em projetos.
+-- SELECT 
+--   sum(t.horas) AS maior_num_horas_no_projeto
+-- FROM 
+--   TRABALHA     AS t
+-- JOIN 
+--   PROJETO      AS p
+-- ON 
+--   t.pno = p.pnumero
+-- GROUP BY
+--   p.pnumero
+-- ORDER BY
+--   sum(t.horas) DESC
+-- LIMIT 1
+-- d) Para cada projeto, liste o nome do projeto e o total de horas por semana (de todos os empregados)
+-- gastas no projeto.
+-- SELECT 
+--   p.pjnome      AS nome_projeto
+--   ,sum(t.horas) AS total_hora_semanais
+-- FROM 
+--   TRABALHA      AS t
+-- JOIN 
+--   PROJETO       AS p
+-- ON 
+--   t.pno = p.pnumero
+-- GROUP BY
+--   p.pnumero
+-- ORDER BY 
+--   sum(t.horas)  DESC
+-- e) Para cada departamento, recupere o nome do departamento e a média salarial de todos os empregados
+-- que trabalham nesse departamento.
+-- f) Liste os nomes de todos os empregados com dois ou mais dependentes.
+-- g) Mostre o nome do departamento que possui o menor número de projetos associados.
+-- h) Escreva uma consulta que retorne do 10o ao 22o caractere do endereço do empregado.
+-- i) Escreva uma consulta que retorne apenas o mês de nascimento de cada funcionário.
+-- j) Escreva uma consulta que retorne a idade (em anos) que o empregado tinha quando o dependente de
+-- parentesco filhou ou filha nasceu.
+-- k) Escreva uma consulte que conte o número de dependentes por ano de nascimento.
+-- l) Escreva uma consulte que mostre o nome de empregados supervisor que tenham 2 ou mais
+-- supervisionados.
+-- m) Escreva uma consulta que mostre o valor mensal a ser pago por projeto (considere que a coluna ‘salário’
+-- de empregado é mensal).
