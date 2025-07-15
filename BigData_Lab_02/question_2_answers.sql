@@ -49,14 +49,113 @@
 --   sum(t.horas)  DESC
 -- e) Para cada departamento, recupere o nome do departamento e a média salarial de todos os empregados
 -- que trabalham nesse departamento.
+-- SELECT 
+--   d.dnome         AS nome_departamento
+--   ,avg(e.salario) AS media_salarial
+-- FROM 
+--   DEPARTAMENTO    AS d
+-- JOIN 
+--   EMPREGADO       AS e
+-- ON 
+--   d.dnumero = e.dno
+-- GROUP BY
+--   d.dnome
 -- f) Liste os nomes de todos os empregados com dois ou mais dependentes.
+-- SELECT 
+--   e.pnome || ' ' || e.unome AS nome_completo
+-- FROM 
+--   EMPREGADO  AS e
+-- JOIN 
+--   DEPENDENTE AS d
+-- ON 
+--   d.essn = e.ssn
+-- GROUP BY 
+--   e.ssn -- Melhorar agrupar pela chave primária para evitar a mistura n presença de nomes idênticos.
+--   ,e.pnome
+--   ,e,unome
+-- HAVING 
+--   count(d.essn) >= 2
 -- g) Mostre o nome do departamento que possui o menor número de projetos associados.
+-- SELECT 
+--   d.dnome      AS nome_departamento
+-- FROM 
+--   DEPARTAMENTO AS d
+-- JOIN 
+--   PROJETO      AS p
+-- ON 
+--   d.dnumero = p.dnum
+-- GROUP BY
+--   d.dnumero
+--   ,d.dnome
+-- ORDER BY 
+--   count(p.dnum) ASC
+-- LIMIT 1
 -- h) Escreva uma consulta que retorne do 10o ao 22o caractere do endereço do empregado.
+-- SELECT 
+--   -- Substring é uma função escalar nativa que extrai parte de uma cadeia de caracteres.
+--   substring(endereco from 10 for 13)  AS endereco_modificado -- Seleciona o caractere 10 e, depois dele os próximos 12 caracteres.
+-- FROM 
+--   EMPREGADO
 -- i) Escreva uma consulta que retorne apenas o mês de nascimento de cada funcionário.
+-- SELECT 
+--   -- Extract é uma função escalar padrão que extrai uma parte específica de um valor de data/hora.
+--   extract(month from datanasc)  AS mes_nascimento
+-- FROM 
+--   EMPREGADO
 -- j) Escreva uma consulta que retorne a idade (em anos) que o empregado tinha quando o dependente de
--- parentesco filhou ou filha nasceu.
--- k) Escreva uma consulte que conte o número de dependentes por ano de nascimento.
--- l) Escreva uma consulte que mostre o nome de empregados supervisor que tenham 2 ou mais
+-- parentesco filho ou ou filha nasceu.
+-- SELECT 
+--   -- Age retorna um intervalo condizente com a subtração da primeira pela segunda coluna
+--   e.ssn
+--   ,extract(year from age(d.datanascdep, e.datanasc))  AS idade
+-- FROM 
+--   EMPREGADO  AS e
+-- JOIN 
+--   DEPENDENTE AS d
+-- ON 
+--   e.ssn = d.essn
+--   AND d.parentesco in ('FILHA', 'FILHO')
+-- k) Escreva uma consulta que conte o número de dependentes por ano de nascimento.
+-- SELECT 
+--   count(essn)                      AS num_dependentes
+--   ,extract(year from datanascdep)  AS ano_nascimento
+-- FROM  
+--   DEPENDENTE
+-- GROUP BY 
+--   extract(year from datanascdep)
+-- ORDER BY 
+--   extract(year from datanascdep)
+-- l) Escreva uma consulta que mostre o nome de empregados supervisor que tenham 2 ou mais
 -- supervisionados.
+-- SELECT 
+--   e.pnome || ' ' || e.unome AS nome_completo
+-- FROM  
+--   EMPREGADO AS e
+-- JOIN 
+--   EMPREGADO AS s
+-- ON 
+--   e.ssn = s.superssn
+-- GROUP BY
+--   e.ssn
+--   ,e.pnome
+--   ,e.unome
+-- HAVING
+--   count(s.superssn) >= 2
 -- m) Escreva uma consulta que mostre o valor mensal a ser pago por projeto (considere que a coluna ‘salário’
 -- de empregado é mensal).
+-- SELECT 
+--   p.pjnome      AS nome_projeto
+--   ,sum(e.salario) AS valor_mensal
+-- FROM  
+--   EMPREGADO      AS e
+-- JOIN 
+--   TRABALHA       AS t 
+-- ON
+--   e.ssn = t.essn
+-- JOIN 
+--   PROJETO        AS p
+-- ON 
+--   t.pno = p.pnumero
+-- GROUP BY
+--   p.pnumero
+--   ,p.pjnome
