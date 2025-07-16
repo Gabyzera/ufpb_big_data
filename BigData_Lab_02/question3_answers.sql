@@ -1,0 +1,121 @@
+-- 3. Subconsultas - Escreva subconsultas SQL para as questões:
+-- a) Recupere nome (pnome e unome) de cada um dos empregados que tenham um dependente cujo
+-- primeiro nome e sexo sejam o mesmo do empregado em questão.
+-- SELECT 
+--   e.pnome || ' ' || e.unome AS nome_completo
+-- FROM  
+--   EMPREGADO AS e
+-- WHERE 
+--   (e.pnome, e.sexo) IN (
+--     SELECT 
+--       d.nomedep
+--       ,d.sexodep
+--     FROM 
+--       DEPENDENTE AS d
+--     WHERE 
+--       d.essn = e.ssn
+--   )
+-- b) Recupere os nomes dos empregados (pnome e unome) cujos salários são maiores que a média dos
+-- salários dos empregados do departamento 5.
+-- SELECT 
+--   pnome || ' ' || unome AS nome_completo
+-- FROM  
+--   EMPREGADO
+-- WHERE 
+--   salario > (
+--     SELECT
+--       avg(salario)
+--     FROM
+--       EMPREGADO
+--     WHERE
+--       dno  = '5'
+--   )
+-- c) Retorne o número do seguro social (SSN) de todos os empregado que trabalham com a mesma
+-- combinação (projeto, horas) em algum dos projetos em que o empregado ‘Fabio Will’ (SSN= 333445555)
+-- trabalhe.
+-- SELECT 
+--   DISTINCT e.ssn AS numero_seguro_social
+-- FROM  
+--   EMPREGADO AS e
+-- JOIN 
+--   TRABALHA  AS t
+-- ON
+--   e.ssn = t.essn
+-- WHERE 
+--   (t.pno, t.horas) IN (
+--     SELECT
+--       t.pno
+--       ,t.horas
+--     FROM
+--       EMPREGADO AS e
+--     JOIN 
+--       TRABALHA  AS t
+--     ON
+--       e.ssn = t.essn
+--     WHERE
+--       e.ssn = '333445555'
+--   )
+-- d) Recupere os nomes de todos os empregados que não trabalham em nenhum projeto.
+-- SELECT 
+--   e.pnome || ' ' || e.unome AS nome_completo
+-- FROM  
+--   EMPREGADO AS e
+-- WHERE 
+--   e.ssn NOT IN (
+--     SELECT
+--       t.essn
+--     FROM 
+--       TRABALHA  AS t
+--   )
+-- e) Recupere o nome de empregados que não tenham dependentes.
+-- SELECT 
+--   e.pnome || ' ' || e.unome AS nome_completo
+-- FROM  
+--   EMPREGADO AS e
+-- WHERE 
+--   e.ssn NOT IN (
+--     SELECT
+--       d.essn
+--     FROM 
+--       DEPENDENTE  AS d
+--   )
+-- f) Liste o último nome de todos os gerentes de departamento que não tenham dependentes.
+-- SELECT
+--   e.unome   AS ultimo_nome
+-- FROM  
+--   EMPREGADO AS e
+-- WHERE 
+--   -- Filtrar os gerentes dos departmentos
+--   e.ssn IN (
+--     SELECT
+--       dt.gerssn
+--     FROM 
+--       DEPARTAMENTO AS dt
+--   )
+--   -- Filtrar pela ausência de dependentes
+--   AND e.ssn NOT IN(
+--     SELECT
+--       d.essn
+--     FROM 
+--       DEPENDENTE AS d
+--   )
+-- g) Liste os nomes dos gerentes que tenham, pelo menos, um dependente.
+-- SELECT
+--   e.pnome || ' ' || e.unome AS nome_completo
+-- FROM  
+--   EMPREGADO AS e
+-- WHERE 
+--   -- Filtrar os gerentes dos departmentos
+--   e.ssn IN (
+--     SELECT
+--       dt.gerssn
+--     FROM 
+--       DEPARTAMENTO  AS dt
+--   )
+--   -- Filtrar pela presença de ao menos um dependente
+--   AND e.ssn IN(
+--     SELECT
+--       d.essn
+--     FROM 
+--       DEPENDENTE AS d
+--   )
