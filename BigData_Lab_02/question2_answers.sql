@@ -1,4 +1,5 @@
--- 2.
+-- 2.  Funções agregadas e nativas- Utilize funções agregadas e/ou nativas SQL para
+-- responder as seguintes questões:
 -- a) Recupere a média salarial de todos os empregados do sexo feminino.
 -- SELECT 
 --   avg(salario) AS media_salario

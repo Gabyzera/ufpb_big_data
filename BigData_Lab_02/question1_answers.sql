@@ -1,4 +1,4 @@
--- 1. 
+-- 1. Joins
 -- INNER JOIN
 -- SELECT 
 --   a.codigo  AS codigo_a
