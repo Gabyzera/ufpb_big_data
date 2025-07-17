@@ -1,0 +1,135 @@
+-- 4. Visões - Escreva comandos SQL para responder as seguintes questões
+-- a) Crie a visão chamada TRABALHA_EM que deverá conter os campos pnome e unome da tabela
+-- EMPREGADO, o campo pjnome da tabela PROJETO e o campo horas da tabela TRABALHA
+-- CREATE VIEW TRABALHA_EM AS
+--   SELECT
+--     e.pnome
+--     ,e.unome
+--     ,p.pjnome
+--     ,t.horas
+--   FROM
+--     EMPREGADO AS e
+--   JOIN 
+--     TRABALHA  AS t
+--   ON
+--     e.ssn = t.essn
+--   JOIN 
+--     PROJETO   AS p
+--   ON
+--     t.pno = p.pnumero;
+-- SELECT
+--   *
+-- FROM
+--   TRABALHA_EM
+-- b) Crie uma consulta SQL na visão implementada no item a que retorne o último e o primeiro nome de
+-- todos os empregados que trabalham no ‘ProdutoX’.
+-- SELECT
+--   pnome  AS primeiro_nome
+--   ,unome AS ultimo_nome
+-- FROM
+--   TRABALHA_EM 
+-- WHERE  
+--   pjnome = 'ProdutoX'
+-- b.i) Altere a tabela EMPREGADO 
+-- ALTER TABLE EMPREGADO ADD COLUMN TELEFONE VARCHAR(13);
+-- b.ii) Demonstre qual o impacto na visão TRABALHA_EM
+-- SELECT
+--   *
+-- FROM
+--   TRABALHA_EM
+-- Não há nenhum impacto na visão TRABALHA_EM, já que os campos utilizados no visualizador não 
+-- sofreram alterações.
+-- c) Exclua a visão criada no item a.
+-- DROP VIEW TRABALHA_EM;
+-- d) Crie uma visão materializada chamada DEPTO_INFO que deverá conter os campos dnome da tabela
+-- DEPARTAMENTO, e o total de empregados e somatório dos salários dos empregados da tabela
+-- EMPREGADO por departamento.
+-- CREATE MATERIALIZED VIEW DEPTO_INFO AS 
+--   SELECT
+--     d.dnome
+--     ,count(e.ssn)   AS total_empregados
+--     ,sum(e.salario) AS sum_salarios
+--   FROM
+--     DEPARTAMENTO AS d
+--   JOIN 
+--     EMPREGADO    AS e
+--   ON
+--     d.dnumero = e.dno
+--   GROUP BY
+--     d.dnome;
+-- SELECT
+--   *
+-- FROM
+--   DEPTO_INFO
+-- Uma visão materalizada armazena fisicamente o resultado obtido para acelerar acesso, ela deve
+-- ser atualizada.
+-- e) Crie uma consulta SQL na visão implementada no item d que retorne a lista de informações por
+-- departamentos ordenados pelo somatório dos salários.
+-- SELECT
+--   dnome
+--   ,total_empregados
+--   ,sum_salarios
+-- FROM
+--   DEPTO_INFO
+-- ORDER BY
+--   sum_salarios
+-- e.i) Faça alterações na tabela EMPREGADO
+-- ALTER TABLE EMPREGADO DROP COLUMN dno;
+-- A coluna dno não pode ser deletada pois outro objeto depende dela (o visualizador materializado da questão d)
+-- ALTER TABLE EMPREGADO DROP COLUMN datanasc;
+-- Essa última alteração não retornou erro pois ela não é dependente de nenhuma tabela, ela não é uma constraint.
+-- e.ii) Demonstre o uso de REFRESH MATERIALIZED VIEW.
+-- REFRESH MATERIALIZED VIEW DEPTO_INFO;
+-- Apóa a alteração efetuada acima, é necessário rodar o materialized view novamente para que obtenha as atualizações
+-- f) Demonstre a diferença entre as visões TRABALHA_EM e DEPTO_INFO usando comandos INSERT ou
+-- UPDATE ou DELETE.
+-- f.1) Insere um novo empregado e o associa a um projeto
+-- INSERT INTO EMPREGADO VALUES ('333666999', 'Fernanda', 'S', 'Carneiro', 'F', 'Rua X, 22 – Araucária – PR', '888665555', '1', '35000.00', '5571986723609');
+-- INSERT INTO TRABALHA VALUES ('333666999', '20', '8');
+-- f.2) Recria a view TRABALHA_EM
+-- Como a view foi deletada na letra c, vamos recriar-la
+-- CREATE VIEW TRABALHA_EM AS
+--   SELECT
+--     e.pnome
+--     ,e.unome
+--     ,p.pjnome
+--     ,t.horas
+--   FROM
+--     EMPREGADO AS e
+--   JOIN 
+--     TRABALHA  AS t
+--   ON
+--     e.ssn = t.essn
+--   JOIN 
+--     PROJETO   AS p
+--   ON
+--     t.pno = p.pnumero;
+-- f.3) Consulta na view TRABALHA_EM
+-- SELECT 
+--   *
+-- FROM
+--   TRABALHA_EM
+-- WHERE
+--   pnome = 'Fernanda'
+-- O dado é apresentado, logo esse formato de view adiciona ele instantaneamente
+-- f.i) A visão DEPTO_INFO.
+-- f.4) Consulta na materialized view DEPTO_INFO
+-- SELECT
+--   *
+-- FROM
+--   DEPTO_INFO
+-- WHERE
+--   dnome = 'Sede Administrativa'
+-- Não houve retorno do dado inserido acima, pois é necessário fazer o refresh da materialized view.
+-- f.5) Atualiza a materialized view para adicionar o novo empregado
+-- REFRESH MATERIALIZED VIEW DEPTO_INFO;
+-- f.6) Vamos re rodar a consulta para averiguar se após o refresh o empregado inserido é apresentado.
+-- SELECT
+--   *
+-- FROM
+--   DEPTO_INFO
+-- WHERE
+--   dnome = 'Sede Administrativa'
+-- Após o refresh, os dados forma atualizados na DEPT_VIEW
+-- g) Exclua as visões criadas nos itens d.
+-- DROP MATERIALIZED VIEW DEPTO_INFO;
