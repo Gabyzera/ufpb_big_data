@@ -1,0 +1,16 @@
+-- a) SELECT * from aluno where cre = 5.0
+-- R: Índice B-tree, pois é uma busca por uma igualdade exata.
+-- b) SELECT * from aluno where idade<70
+-- R: Índice BRIN pois ele armazena apenas m´inimos e máximos por bloco de disco ocupando pouco espaço e acelerando buscas de faixa, como é o exemplo dessa questão.
+-- c) SELECT * from aluno where idade>27 and cre<3.0
+-- R: Índice B-Tree para campo idade e cre e por fim o índice Bitmap Index Scan para combinar os resultados de forma eficiente 
+-- d) SELECT avg(idade) from aluno
+-- R: Índice B-Tree no campo idade para possibilitar o Index-Only Scan, já que não há um filtro e o Index-Only Scan pode calcular a média.
+-- e) SELECT idade, count(*) from aluno where curso = "Computação" group by idade
+-- R: Índice B-Tree pois há um filtro de igualdade no campo curso.
+-- f) SELECT * FROM aluno WHERE disciplinas @> '[{"nome": "Cálculo I"}]'
+-- R: Índice GIN por conter filtros em campos do tipo jsonb.
+-- g) SELECT * FROM aluno WHERE data_ingresso BETWEEN '2024-01-01' AND '2024-12-31'
+-- R: Índice B-Tree, esse índice trabalha muito bem com faixas de dados.
+-- h) SELECT * FROM aluno WHERE ST_DWithin(localizacao, ST_MakePoint(-34.88, -7.12)::GEOMETRY, 1000);
+-- R: Índice GIST pois ele é o índice padrão do PostGIS para geometria.

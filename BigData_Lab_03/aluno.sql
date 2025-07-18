@@ -1,0 +1,28 @@
+-- Habilitamdp a extensão PostGIS para uso do type geometry
+-- CREATE EXTENSION IF NOT EXISTS postgis;
+-- CREATE TABLE aluno (
+--   matricula SERIAL PRIMARY KEY,
+--   curso VARCHAR(100) NOT NULL,
+--   idade INT NOT NULL,
+--   cre NUMERIC(4,2),
+--   disciplinas JSONB,
+--   data_ingresso TIMESTAMP NOT NULL DEFAULT now(),
+--   localizacao GEOMETRY(Point, 4326)
+-- );
+-- Inserção de um aluno dados com curso, idade, cre e localização inventados
+-- INSERT INTO aluno (
+--   curso
+--   ,idade
+--   ,cre
+--   ,disciplinas
+--   ,localizacao
+-- ) VALUES (
+--   'Ciências de Dados e Inteligência Artificial'
+--   ,'22'
+--   ,'7.9'
+--   ,'[
+--       {"codigo": "MAT101", "nome": "Matemática", "nota": 8.5 }
+--       ,{ "codigo": "FIS102", "nome": "Física", "nota": 7.2 }
+--   ]'::jsonb
+--   ,'POINT(-35.8763 -7.1153)'
+-- )
