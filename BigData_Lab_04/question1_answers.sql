@@ -1,0 +1,214 @@
+-- 1. Arrays
+-- CREATE TABLE employee
+-- (
+--   name TEXT PRIMARY KEY
+--   ,certifications TEXT[]
+-- );
+-- Retorno: "Success.No rows returned"
+-- INSERT INTO employee 
+-- VALUES (
+--   'Bill'
+--   ,'{"CCNA", "ACSP", "CISSP"}'
+-- );
+-- Retorno: "Success.No rows returned"
+-- SELECT
+--   *
+-- FROM
+--   employee;
+-- Retorno: 
+-- name |      certifications 
+-- --------------------------------
+-- Bill | ["CCNA", "ACSP", "CISSP"]
+-- SELECT
+--   name
+-- FROM
+--   employee
+-- WHERE
+--   certifications @> '{ACSP}'; -- "@>" é o operador de contains que retorna um dado booleano.
+-- Retorno:
+-- name
+-- ----
+-- Bill 
+-- 1.1. Array Access
+-- SELECT
+--   certifications[1] -- Seleciona o primeiro elemento do array.
+-- FROM
+--   employee;
+-- Retorno:
+-- certifications 
+-- --------------
+-- CCNA
+-- SELECT
+--   unnest(certifications) -- O 'unnest' é uma função que expande o array em várias linhas, uma para cada elemento do array.
+-- FROM
+--   employee;
+-- Retorno:
+-- unnest 
+-- ------
+-- CCNA
+-- ACSP
+-- CISSP
+-- 1.2. Array Unrolling
+-- SELECT
+--   name
+--   ,unnest(certifications)
+-- FROM
+--   employee;
+-- Retorno:
+-- name | unnest 
+-- -------------
+-- Bill | CCNA
+-- Bill | ACSP
+-- Bill | CISSP
+-- 1.3. Array Creation
+-- SELECT
+--   distinct relkind -- Campo que indica o tipo de cada objeto.
+-- FROM
+--   pg_class -- O PostgreSQL possui tabelas internas que descrevem toda a estrutura do banco, 
+--            -- o 'pg_class' é uma dessas tabelas e é reponsável pelo armazenamento de um registro para cada objeto relacional
+--            -- (tabelas, índices, sequências, ...).
+-- ORDER BY
+--   1;
+-- Retorno:
+-- relkind 
+-- -------
+-- I
+-- S
+-- c
+-- i
+-- p 
+-- r
+-- t
+-- v
+-- SELECT
+--   array_agg(distinct relkind)
+-- FROM
+--   pg_class;
+-- Retorno:
+-- array_agg 
+-- -------
+-- {I,S,c,i,p,r,t,v}
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 2. Range Types
+-- CREATE TABLE car_rental
+-- (
+--   id SERIAL PRIMARY KEY
+--   ,time_span TSTZRANGE
+-- );
+-- Retorno: "Success. No rows returned"
+-- INSERT INTO car_rental 
+-- VALUES (
+--   default
+--   ,'[2016-05-03 09:00:00, 2016-05-11 12:00:00)' -- Intervalo armazenado com inclusão da primeira data e exclusão da segunda.
+-- );
+-- Retorno: "Success.No rows returned"
+-- SELECT
+--   *
+-- FROM
+--   car_rental
+-- WHERE 
+--   time_span @> '2016-05-09 00:00:00'::timestamptz; -- Retorna 'true' se essa data estiver dentro do intervalo de "time_span".
+-- Retorno:
+-- id |                     time_span                     
+-- --------------------------------------------------------
+-- 1  | ["2016-05-03 09:00:00+00","2016-05-11 12:00:00+00")  -- O id representa o registro cujo "time_span" contém a data acima.
+-- SELECT
+--   *
+-- FROM
+--   car_rental
+-- WHERE 
+--   time_span @> '2018-06-09 00:00:00'::timestamptz;
+-- Retorno: "Success. No rows returned"
+-- 2.1. Range Type Indexing
+-- INSERT INTO car_rental (time_span) -- Insere os ranges obtidos nas linhas abaixo na coluna "time_span".
+-- SELECT
+--   tstzrange(y, y + '1 day') -- Para cada dado na coluna "y", cria um range de timestamp com fuso que vai de "y" até "y" + 1 dia.
+-- FROM
+--   generate_series('2001-09-01 00:00:00'::timestamptz, -- Gera uma série de timestamps diários do dia 2001-09-01
+--                   '2010-09-01 00:00:00'::timestamptz, -- até o dia 2010-09-01,
+--                   '1 day'                             -- com incremento de um dia.
+--   ) AS x(y); -- Cada valor da série de timestamps fica armazenado na coluna "y".
+-- Retorno: "Success. No rows returned"
+-- SELECT
+--   *
+-- FROM
+--   car_rental
+-- WHERE
+--   time_span @> '2007-08-01 00:00:00'::timestamptz; -- Retorna 'true' se essa data estiver dentro do intervalo de "time_span".
+-- Retorno:
+-- id   |                     time_span                     
+-- --------------------------------------------------------
+-- 2162 | ["2007-08-01 00:00:00+00","2007-08-02 00:00:00+00") -- O id representa o registro cujo "time_span" contém a data acima.
+-- EXPLAIN SELECT -- 'EXPLAIN' retorba o plano de execução da query.
+--   *
+-- FROM
+--   car_rental
+-- WHERE
+--   time_span @> '2007-08-01 00:00:00'::timestamptz;
+-- Retorno:
+--                                QUERY PLAN                                                                                                                     
+-- --------------------------------------------------------------------------
+-- Seq Scan on car_rental (cost=0.00..6.11 rows=1 width=26)                   -- Aqui entendemos que o PostgreSQL vai ler 
+-- todas as linhas da tabela "car_rental" sequencialmente.
+-- '0.00': custo estimado para chegar ao primeiro registro.
+-- '6.11': custo total estimado para ler toda a tabela.
+-- 'rows=1': estimativa que 1 linha satisfaça a condição.
+-- 'width=26': estimativa do tamanho médio de cada linha retornada.
+--   Filter: (time_span @> '2007-08-01 00:00:00'::timestamptz with time zone) -- Mostra a condição que será aplicada a cada linha durante o scan.
+-- CREATE INDEX
+--   car_rental_idx
+-- ON
+--   car_rental
+-- USING GIST -- Estrutura GiST' para que consultas de intervalo usem esse índice criado ao invés de passar pela tabela interia.
+--            -- Sem índice o PostgreSQL faz um 'Seq Scan' e lê toda a tabela, com o 'GiST' ele pode usar o 'Index Scan'.
+--   (time_span);
+-- Retorno: "Success. No rows returned"
+-- EXPLAIN SELECT
+--   *
+-- FROM
+--   car_rental
+-- WHERE
+--   time_span @> '2007-08-01 00:00:00'::timestamptz;
+-- Retorno:
+--                                   QUERY PLAN                                                                                                                                                        
+-- -------------------------------------------------------------------------------
+-- Index Scan using car_rental_idx on car_rental (cost=0.15..2.37 rows=1 width=26) -- Utiliza o Index Scan para navegar na árvore GiST do índice 
+-- para achar os ranges que podem satistfazer a condição.
+-- '0.15': custo para buscar o primeiro bloco de índice.
+-- '2.37': custo total estimado para encontrar 
+-- todas as linhas correspondentes.
+-- 'rows=1': estimativa que 1 linha satisfaça a condição.
+-- 'width=26': estimativa do tamanho médio de cada linha retornada.
+--   Index Cond: (time_span @> '2007-08-01 00:00:00'::timestamptz with time zone)  -- Condição aplicada no índice.
+-- A estrutura GiST armazena, para cada intervalo, seus limites mínimo e máximo, com isso, ele pode descer pela árvore e já eliminar em bloco
+-- todos os ranges que não contém o valor buscado. Benefícios dessa estrutura: velocidade, redução de leitura da tabela e escalabilidade.
+-- 2.2. Exclusion Contraints
+-- ALTER TABLE 
+--   car_rental
+-- ADD EXCLUDE USING GIST  -- Adição de uma restrição de exclusão usando um índice GiST 
+--   (time_span 
+--   WITH &&); -- Para cada par de linhas, o GiST verifica se time_span1 && time_span2 é 'True'.
+-- Se sim, a exclusão falha, impedindo assim que registros tenham intervalos que se sobrepõem.
+-- Retorno: "Success. No rows returned"
+-- INSERT INTO
+--   car_rental
+-- VALUES (
+--   default
+--   ,'[2003-04-01 00:00:00, 2003-04-01 00:00:01)'
+-- );
+-- Retorno: "ERROR:  23P01: conflicting key value violates exclusion constraint "car_rental_time_span_excl"
+-- DETAIL:  Key (time_span)=(["2003-04-01 00:00:00+00","2003-04-01 00:00:01+00")) conflicts with existing key (time_span)=(["2003-04-01 00:00:00+00","2003-04-02 00:00:00+00"))."
+-- O erro ocorreu pois a query acima impede que dois intervalos se sobreponam, como já havia no banco de dados um registro com "time_span = '2003-04-01 00:00:00'",
+-- retornou o erro quando tentei inserir o mesmo dado.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 3. Geometry
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 4. XML
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 5. JSON
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 6. JSONB
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 7. Row types
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 8. Character strings
