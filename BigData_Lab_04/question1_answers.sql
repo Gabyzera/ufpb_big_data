@@ -202,6 +202,13 @@
 -- retornou o erro quando tentei inserir o mesmo dado.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 3. Geometry
+-- CREATE TABLE 
+--   dart (
+--     dartno SERIAL -- Campo com type 'SERIAL' que cria internamente uma coluna de inteiros com default apontando para uma sequência auto-incremental.
+--                   -- Além disso, é costume usar o 'SERIAL' para chaves primárias, pois garante um identificador único e sequencional para cada linha.
+--     ,location POINT --Campo com type 'POINT' que armazena um par de coordenadas geométricas ("x,y")
+--   );
+-- Retorno: "Success. No rows returned"
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 4. XML
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
