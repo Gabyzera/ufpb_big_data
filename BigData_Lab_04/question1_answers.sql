@@ -209,8 +209,119 @@
 --     ,location POINT --Campo com type 'POINT' que armazena um par de coordenadas geométricas ("x,y")
 --   );
 -- Retorno: "Success. No rows returned"
+-- INSERT INTO 
+--   dart (location) -- Para cada linha gerada no 'SELECT', o valor de 'location' é inserido na tabela.
+-- SELECT 
+--   CAST('(' || random() * 100 || ',' || random() * 100 || ')' AS point) -- O 'random' produz valores entre 0 e 1 e aqui há a concatenação deles.
+-- FROM
+--   generate_series(1, 1000); -- Gera uam tabela virtual de 1 até 1000
+-- Retorno: "Success. No rows returned"
+-- SELECT
+--   *
+-- FROM
+--   dart
+-- LIMIT 
+--   5;
+-- Retorno:
+-- dartno |              location                                                        
+-- ---------------------------------------------
+-- 1      | (84.9812152578371,34.7821813983078)
+-- 2      | (28.6183874097023,65.6098548970997)
+-- 3      | (0.319021939221087,13.5801065281874)
+-- 5      | (95.3348402065242,61.1993264795437)
+-- 5      | (70.480438962189,54.1779917741512)
+-- 3.1. Geometry Restriction
+-- find all darts within four units of point (50, 50)
+-- SELECT
+--   *
+-- FROM
+--   dart
+-- WHERE
+--   location <@ '<(50, 50), 4>'::circle; -- A 'location' está filtrada para o limite do círculo ser (50,50) e raio 4.
+-- Retorno:
+-- dartno |              location                                                                                  
+-- ---------------------------------------------
+-- 208    | (50.946590448424,46.9589083321334)
+-- 759    | (48.471094725124,48.047663355509)
+-- 813    | (52.0805643347921,49.6502695195496)
+-- 887    | (46.5901876898899,49.4157731374087)
+-- 914    | (53.0161483926475,49.0826216620864)
+-- EXPLAIN SELECT
+--   *
+-- FROM
+--   dart
+-- WHERE
+--   location <@ '<(50, 50), 4>'::circle;
+-- Retorno:
+--                     QUERY PLAN                                                                                                                                                                       
+-- ---------------------------------------------------
+-- Seq Scan on dart (cost=0.00..19.50 rows=1 width=20) -- Utiliza o Seq Scan para navegar em todas as linhas da tabela aplicando o filtro em cada uma.
+-- '0.00': custo para começar a retornar a primeira linha.
+-- '19.50': custo total estimado para varrer toda a tabela e aplicar o filtro.
+-- 'rows=1': estimativa que 1 linha satisfaça a condição.
+-- 'width=20': estimativa do tamanho médio de cada linha retornada.
+--   Filter: (location <@ '<(50,50),4>'::circle)       -- A condição que o Postgres vai aplicar a cada linha durante o scan.
+-- 3.2. Indexed Geometry Restriction
+-- CREATE INDEX 
+--   dart_idx -- Cria um índice GiST na coluna 'location' habilitanto o PostreSQL a usar um Index Scan para consultas espaciais em vez de varrer toda a tabela.
+-- ON
+--   dart
+-- USING GIST(
+--   location
+-- );
+-- Retorno: "Success. No rows returned"
+-- EXPLAIN SELECT
+--   *
+-- FROM
+--   dart
+-- WHERE
+--   location <@ '<(50, 50), 4>'::circle;
+-- Retorno:
+--                     QUERY PLAN                                                                                                                                                                       
+-- -------------------------------------------------------------------
+-- Index Scan using dart_idx on dart (cost=0.14..2.36 rows=1 width=20) -- Utiliza o o INdex Scan para percorrer a árvore do índice GiST 
+-- para localizar os pontos que satisfazem a condição.
+-- '0.14': custo estimado para encontrar a primeira linha.
+-- '2.36': custo total estimado para retornar todas as linhas que satisfazem o filtro.
+-- 'rows=1': estimativa que 1 linha satisfaça a condição.
+-- 'width=20': estimativa do tamanho médio de cada linha retornada.
+--   Index Cond: (location <@ '<(50,50),4>'::circle)                   -- A condição aplicada diretamente no índice.
+-- 3.3. Geometry Indexes with LIMIT
+-- -- find the two closest darts to (50, 50)
+-- SELECT
+--   *
+-- FROM
+--   dart
+-- ORDER BY
+--   location <-> '(50, 50)'::point
+-- LIMIT
+--   2;
+-- Retorno:
+-- dartno |              location                                                                                  
+-- ---------------------------------------------
+-- 813    | (52.0805643347921,49.6502695195496)
+-- 759    | (48.471094725124,48.047663355509)
+-- EXPLAIN SELECT
+--   *
+-- FROM
+--   dart
+-- ORDER BY
+--   location <-> '(50, 50)'::point
+-- LIMIT
+--   2;
+-- Retorno:
+--                     QUERY PLAN                                                                                                                                                                       
+-- ---------------------------------------
+-- Limit (cost=0.14..0.22 rows=2 width=28) -- O PostgreSQL vai fazer uma busca pelos k pontos mais próximos e depois aplicar o 'LIMIT 2'.
+-- '0.14': custo estimado para encontrar o primeiro registro.
+-- '0.22': custo total estimado para retornar as 2 linhas.
+-- 'rows=2': estimativa que 2 serão devolvidas.
+-- 'width=28': estimativa do tamanho médio de cada linha.
+--   Order by: (location <->'::point)      -- A ordenação é feita com base na distância entre cada 'location' e o ponto dado.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 4. XML
+-- CREATE TABLE printer (doc XML);
+-- Retorno: "Success. No rows returned"
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 5. JSON
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
